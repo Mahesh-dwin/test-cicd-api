@@ -11,8 +11,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      CA_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
-      CA_CLIENT_SECRET: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_SECRET }}
+      ANYPOINT_PLATFORM_CLIENT_ID: ${{ANYPOINT_PLATFORM_CLIENT_ID}}
+      ANYPOINT_PLATFORM_CLIENT_SECRETT: ${{ANYPOINT_PLATFORM_CLIENT_SECRET}}
 
     steps:
       - uses: actions/checkout@v3
@@ -53,8 +53,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      CA_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
-      CA_CLIENT_SECRET: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_SECRET }}
+      ANYPOINT_PLATFORM_CLIENT_ID: ${{ANYPOINT_PLATFORM_CLIENT_ID}}
+      ANYPOINT_PLATFORM_CLIENT_SECRET: ${{ANYPOINT_PLATFORM_CLIENT_SECRET}}
 
     steps:
       - uses: actions/checkout@v3
@@ -81,8 +81,8 @@ jobs:
     needs: upload
     runs-on: ubuntu-latest
     env:
-      CA_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
-      CA_CLIENT_SECRET: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_SECRET }}
+      ANYPOINT_PLATFORM_CLIENT_ID: ${{ANYPOINT_PLATFORM_CLIENT_ID}}
+      ANYPOINT_PLATFORM_CLIENT_SECRET: ${{ANYPOINT_PLATFORM_CLIENT_SECRET}}
 
     steps:
       - uses: actions/checkout@v3
