@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ANYPOINT_PLATFORM_CLIENT_ID: ${{ ANYPOINT_PLATFORM_CLIENT_ID }}
-      ANYPOINT_PLATFORM_CLIENT_SECRETT: ${{ ANYPOINT_PLATFORM_CLIENT_SECRET }}
+      ANYPOINT_PLATFORM_CLIENT_SECRET: ${{ ANYPOINT_PLATFORM_CLIENT_SECRET }}
 
     steps:
       - uses: actions/checkout@v3
