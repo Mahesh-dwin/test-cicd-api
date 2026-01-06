@@ -101,7 +101,7 @@ jobs:
       - name: Deploy to Sandbox
         run: |
           artifactName=$(ls *.jar | head -1)
-          mvn deploy -DmuleDeploy \
+          mvn mule:deploy \
             -Dmule.artifact=$artifactName \
             -s .maven/settings.xml \
             -DskipTests \
