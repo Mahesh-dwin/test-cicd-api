@@ -63,7 +63,7 @@ jobs:
       - name: Deploy to Sandbox (Direct CloudHub Deploy)
         run: |
           artifactName=$(ls *.jar | head -1)
-          mvn deploy -DmuleDeploy \
+          mvn mule:deploy \
             -Dmule.artifact=$artifactName \
             -s .maven/settings.xml \
             -DskipTests \
