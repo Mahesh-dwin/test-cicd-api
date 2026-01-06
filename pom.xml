@@ -52,14 +52,14 @@
 			</plugin>
 		</plugins>
 	</build>
-	<distributionManagement>
+	<!-- <distributionManagement>
 		<repository>
 			<id>ca.anypoint.credentials</id>
 			<name>Corporate Repository</name>
 			<url>https://maven.anypoint.mulesoft.com/api/v2/organizations/${project.groupId}/maven</url>
 			<layout>default</layout>
 		</repository>
-	</distributionManagement>
+	</distributionManagement> -->
 	<dependencies>
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
