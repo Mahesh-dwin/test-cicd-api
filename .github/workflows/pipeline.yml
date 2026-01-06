@@ -1,4 +1,4 @@
-# This workflow will build a MuleSoft project and deploy to CloudHub
+# This workflow builds a MuleSoft project and deploys directly to CloudHub (No Exchange)
 
 name: Build and Deploy to Sandbox
 
@@ -30,18 +30,8 @@ jobs:
           java-version: 11
           distribution: 'zulu'
 
-      - name: Print effective-settings (optional)
-        run: mvn help:effective-settings
-
       - name: Build with Maven
         run: mvn -B package -s .maven/settings.xml
-
-      - name: Stamp artifact file name with commit hash
-        run: |
-          artifactName1=$(ls target/*.jar | head -1)
-          commitHash=$(git rev-parse --short "$GITHUB_SHA")
-          artifactName2=$(ls target/*.jar | head -1 | sed "s/.jar/-$commitHash.jar/g")
-          mv $artifactName1 $artifactName2
 
       - name: Upload artifact
         uses: actions/upload-artifact@master
@@ -49,7 +39,7 @@ jobs:
           name: artifacts
           path: target/*.jar
 
-  upload:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     env:
@@ -70,35 +60,7 @@ jobs:
         with:
           name: artifacts
 
-      - name: Upload to Exchange
-        run: |
-          artifactName=$(ls *.jar | head -1)
-          mvn deploy \
-            -s .maven/settings.xml \
-            -Dmule.artifact=$artifactName
-
-  deploy:
-    needs: upload
-    runs-on: ubuntu-latest
-    env:
-      CLIENT_ID: ${{ secrets.CLIENT_ID }}
-      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - uses: actions/download-artifact@master
-        with:
-          name: artifacts
-
-      - name: Deploy to Sandbox
+      - name: Deploy to Sandbox (Direct CloudHub Deploy)
         run: |
           artifactName=$(ls *.jar | head -1)
           mvn deploy -DmuleDeploy \
