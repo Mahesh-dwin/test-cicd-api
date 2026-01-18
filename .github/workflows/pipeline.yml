@@ -1,21 +1,11 @@
-# This workflow builds a MuleSoft project and deploys to CloudHub Sandbox
-# Triggered on:
-# 1. PR from dev -> main
-# 2. Direct push to main
+# This workflow will build a MuleSoft project and deploy to CloudHub
 
-name: Build and Deploy to Sandbox (Dev → Main Strategy)
+name: Build and Deploy to Sandbox
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-    types:
-      - opened
-      - synchronize
-      - reopened
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -40,14 +30,17 @@ jobs:
           java-version: 11
           distribution: 'zulu'
 
+      - name: Print effective-settings (optional)
+        run: mvn help:effective-settings
+
       - name: Build with Maven
         run: mvn -B package -s .maven/settings.xml
 
-      - name: Stamp artifact with commit hash
+      - name: Stamp artifact file name with commit hash
         run: |
           artifactName1=$(ls target/*.jar | head -1)
           commitHash=$(git rev-parse --short "$GITHUB_SHA")
-          artifactName2=$(echo $artifactName1 | sed "s/.jar/-$commitHash.jar/")
+          artifactName2=$(ls target/*.jar | head -1 | sed "s/.jar/-$commitHash.jar/g")
           mv $artifactName1 $artifactName2
 
       - name: Upload artifact
