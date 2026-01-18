@@ -1,6 +1,9 @@
-# CI/CD pipeline for MuleSoft - Two Branch Strategy (dev → main)
+# This workflow builds a MuleSoft project and deploys to CloudHub Sandbox
+# Triggered on:
+# 1. PR from dev -> main
+# 2. Direct push to main
 
-name: Build and Deploy to Sandbox
+name: Build and Deploy to Sandbox (Dev → Main Strategy)
 
 on:
   push:
@@ -22,11 +25,9 @@ jobs:
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
+      - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -37,47 +38,78 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 11
-          distribution: zulu
+          distribution: 'zulu'
 
-      - name: Build Mule Application
-        run: mvn -B clean package -s .maven/settings.xml
+      - name: Build with Maven
+        run: mvn -B package -s .maven/settings.xml
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+      - name: Stamp artifact with commit hash
+        run: |
+          artifactName1=$(ls target/*.jar | head -1)
+          commitHash=$(git rev-parse --short "$GITHUB_SHA")
+          artifactName2=$(echo $artifactName1 | sed "s/.jar/-$commitHash.jar/")
+          mv $artifactName1 $artifactName2
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@master
         with:
-          name: mule-artifact
+          name: artifacts
           path: target/*.jar
 
-  deploy:
+  upload:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
     env:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
+      - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@master
         with:
-          name: mule-artifact
+          name: artifacts
 
-      - name: Deploy to CloudHub Sandbox
+      - name: Upload to Exchange
+        run: |
+          artifactName=$(ls *.jar | head -1)
+          mvn deploy \
+            -s .maven/settings.xml \
+            -Dmule.artifact=$artifactName
+
+  deploy:
+    needs: upload
+    runs-on: ubuntu-latest
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - uses: actions/download-artifact@master
+        with:
+          name: artifacts
+
+      - name: Deploy to Sandbox
         run: |
           artifactName=$(ls *.jar | head -1)
           mvn mule:deploy \
             -Dmule.artifact=$artifactName \
             -s .maven/settings.xml \
             -DskipTests \
-            -DskipDeploymentVerification=true
+            -DskipDeploymentVerification="true"
